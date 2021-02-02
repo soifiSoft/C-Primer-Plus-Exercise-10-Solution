@@ -1,4 +1,4 @@
-﻿// File: exercise10.c
+﻿// File: Source.c
 // Author: Dmitrii Zmerzlov
 /* Description: Реализация Упражнения 10 из книги Стивена Прата 
    "Язык программирования C. Лекции и упражнения" 5-е издание */
@@ -16,24 +16,28 @@
 выполнять все указанные в меню задачи.
 */
 #include <stdio.h>
-#include <string.h>
 #include <Windows.h>
+#include <stdbool.h>
 #include "Header.h"
 
 int main() {
+	// Устанавливаем кодировку консоли Windows-1251 для вывода кириллицы
 	SetConsoleOutputCP(1251);
 
-	char arrOfStrings[MAX][STRING_LEN];
-	int choice, counter;
-	int state = TRUE;
+	char arrOfStrings[MAX][STRING_LEN];   // Массив строк, куда будут записываться 10 строк
+	int choice;                           // Выбор пользователя в меню
+	int counter;                          // Счетчик
+	bool state = true;                    // Состояние. Нужно для выхода из цикла считывания строк,
+	                                      // если встретится EOF (по условию задачи)
 
 	printf("Введите максимум 10 строк c длиною не больше 50 на латинице\n");
-	printf("Слова, отличные от латиницы, будут заменятся на пробел: ");
-	for (counter = 0; state == TRUE && counter < MAX; counter++)
-		ownfgets(&arrOfStrings[counter], STRING_LEN, &state);
+	printf("Слова, отличные от латиницы, будут заменятся на пробел:\n");
+	printf("Для выхода Ctrl + Z:\n");
+	for (counter = 0; state == true && counter < MAX; counter++)
+		get_strings(&arrOfStrings[counter], STRING_LEN, &state);
 
 	while ((choice = get_choice()) != 'e')
-		sortingAndPrint(arrOfStrings, counter, choice);
+		sorting(arrOfStrings, counter, choice);
 
 	printf("До свидания!\n");
 

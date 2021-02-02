@@ -1,7 +1,6 @@
 ﻿#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
-#include <Windows.h>
+#include <stdbool.h>
 #include "Header.h"
 
 /*
@@ -11,7 +10,7 @@
  * \param: choice Выбранный пункт меню
  * \return 0: Код работы
  */
-int sortingAndPrint(const char arrOfStrings[][STRING_LEN], int counter, char choice) {
+int sorting(const char arrOfStrings[][STRING_LEN], int counter, char choice) {
 	char *temp, *arr[MAX];
 	int i, top, seek;
 
@@ -24,9 +23,7 @@ int sortingAndPrint(const char arrOfStrings[][STRING_LEN], int counter, char cho
 		for (seek = top + 1; seek < counter; seek++) {
 			switch (choice) {
 			case 'a':
-				for (i = 0; i < counter; i++)
-					printf("%s\n", *(arrOfStrings + i));
-
+				print_results(arr, counter);
 				return 0;
 			case 'b':
 				if (strcmp(arr[top], arr[seek]) > 0)
@@ -37,7 +34,7 @@ int sortingAndPrint(const char arrOfStrings[][STRING_LEN], int counter, char cho
 					scrambling(arr, top, seek);
 				break;
 			case 'd':
-				if (firstWordLenght(arr[top]) > firstWordLenght(arr[seek]))
+				if (first_word_lenght(arr[top]) > first_word_lenght(arr[seek]))
 					scrambling(arr, top, seek);
 				break;
 			default:
@@ -46,11 +43,41 @@ int sortingAndPrint(const char arrOfStrings[][STRING_LEN], int counter, char cho
 			}
 		}
 
-	// Вывод результата сортировки
-	for (i = 0; i < counter; i++)
-		puts(arr[i]);
+	print_results(arr, counter);
 
 	return 0;
+}
+
+/*
+ * \brief: Вычисление длины первого слова строки string
+ * \param: *string Указатель на строку, откуда берется вся строка
+ * \return length: Длина первого слова
+ */
+int first_word_lenght(char *string) {
+	int lenght = 0;
+
+	while (isspace(*string))
+		string++;
+
+	while (!isspace(*string) && *string) {
+		lenght++;
+		string++;
+	}
+
+	return lenght;
+}
+
+/*
+ * \brief: Вывод результата сортировки
+ * \param: *arr Массив, где хранятся указатели на отсортированные строки
+ * \param: counter Кол-во введенных строк
+ */
+void print_results(char *arr[], int counter) {
+	int i;
+
+	printf("\nРезультат:\n");
+	for (i = 0; i < counter; i++)
+		puts(arr[i]);
 }
 
 /*
@@ -68,22 +95,37 @@ void scrambling(char *arr[], int top, int seek) {
 }
 
 /*
- * \brief: Вычисление длины первого слова строки string
- * \param: *string Указатель на строку, откуда берется вся строка
- * \return length: Длина первого слова
+ * \brief: Принимает ввод от пользователя и записывает строки в *string
+ * \param: *string: Указатель на строку, куда нужно записать введенныем пользователем символы
+ * \param: *state: Состояние ввода. Нужно, если пользователь ввел EOF для прекращения ввода
+ * \param: num: Макс. длина строки
+ * \return string: Указатель на созданную строку
  */
-int firstWordLenght(char *string) {
-	int lenght = 0;
+char * get_strings(char *string, int num, bool *state) {
+	int counter = 0;
+	char ch;
 
-	while (isspace(*string))
-		string++;
+	while ((ch = getchar()) && counter != num - 1) {
+		if (ch == '\n')
+			break;
+		if (ch == 26 || ch == EOF) {   // 26 - это EOF
+			*state = false;
+			break;
+		}
+		if (ch <= 31)   // Вместо непечаемых символов подставляем пробел
+			*(string + counter) = ' ';
+		else
+			*(string + counter) = ch;
 
-	while (!isspace(*string) && *string) {
-		lenght++;
-		string++;
+		counter++;
 	}
+	*(string + counter) = '\0';
 
-	return lenght;
+	// Очищаем входной буфер для последующего ввода
+	while (ch != '\n' && ch != EOF && ch != 26)
+		ch = getchar();
+
+	return string;
 }
 
 /*
@@ -109,58 +151,26 @@ char get_menu_input() {
 }
 
 /*
- * \brief: Отображает меню и держить ch в диапазоне от 'a' до 'e'
- * \return: Символ для передачи его в функцию сортировки sortingAndPrint
+ * \brief: Отображает меню и держит ch в диапазоне от 'a' до 'e'
+ * \return: Символ для передачи его в функцию сортировки sorting
  */
 char get_choice() {
 	int ch;
 
-	printf("\nВыберите пункт:\n");
+	printf("\n---------------------------------------------------------\n");
 	printf("a. Печать исходных строк\n");
 	printf("b. Печать строк в порядке ASCII\n");
 	printf("c. Печать строк в порядке возрастания их длины\n");
 	printf("d. Печать строк в порядке возрастания длины первого слова\n");
-	printf("e. Выход\n");
+	printf("e. Выход");
+	printf("\n---------------------------------------------------------\n");
+	printf("\nВыберите пункт: ");
 	ch = get_menu_input();
 
 	while (ch < 'a' || ch > 'e') {
-		printf("Select a, b, c, d or e.\n");
+		printf("Выберите a, b, c, d или e: ");
 		ch = get_menu_input();
 	}
 
 	return ch;
-}
-
-/*
- * \brief: Принимает ввод от пользователя и записывает строки в *string
- * \param: *string: Указатель на строку, куда нужно записать введенныем пользователем символы
- * \param: num: Макс. длина строки
- * \param: *state: Состояние ввода. Нужно, если пользователь ввел EOF для прекращения ввода
- * \return string: Указатель на созданную строку
- */
-char * ownfgets(char *string, int num, int *state) {
-	int counter = 0;
-	char ch;
-
-	while ((ch = getchar()) && counter != num - 1) {
-		if (ch == '\n')
-			break;
-		if (ch == 26 || ch == EOF) {   // 26 - это EOF
-			*state = FALSE;
-			break;
-		}
-		if (ch <= 31)   // Вместо непечаемых символов подставляем пробел
-			*(string + counter) = ' ';
-		else
-			*(string + counter) = ch;
-
-		counter++;
-	}
-	*(string + counter) = '\0';
-
-	// Очищаем входной буфер для последующего ввода
-	while (ch != '\n' && ch != EOF && ch != 26)
-		ch = getchar();
-
-	return string;
 }
